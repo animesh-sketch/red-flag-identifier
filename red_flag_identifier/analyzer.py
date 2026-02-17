@@ -1,5 +1,7 @@
 """Main analysis orchestrator - combines keyword, custom, and AI analysis."""
 
+from __future__ import annotations
+
 from .ai_analyzer import analyze_with_ai
 from .rules.custom_rules import scan_with_custom_rules
 from .rules.keyword_rules import RuleMatch, scan_text

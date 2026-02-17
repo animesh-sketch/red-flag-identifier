@@ -1,5 +1,7 @@
 """Format and display red flag analysis results."""
 
+from __future__ import annotations
+
 import json
 from collections import Counter
 

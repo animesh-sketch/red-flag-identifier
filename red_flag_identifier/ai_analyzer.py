@@ -1,5 +1,7 @@
 """AI-powered red flag analysis using Claude API."""
 
+from __future__ import annotations
+
 import json
 import os
 import time
