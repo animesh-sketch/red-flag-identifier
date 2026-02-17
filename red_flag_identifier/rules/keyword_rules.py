@@ -16,6 +16,7 @@ class RuleMatch:
     line_number: int
     context: str  # surrounding text for context
     source: str = "keyword"
+    speaker: str = ""  # speaker/agent who said this
 
 
 @dataclass

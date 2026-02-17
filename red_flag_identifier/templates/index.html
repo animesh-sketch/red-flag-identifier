@@ -265,11 +265,136 @@
             padding-right: 36px;
         }
 
-        select:focus, input[type="password"]:focus {
+        select:focus, input[type="password"]:focus, input[type="date"]:focus {
             outline: none;
             border-color: var(--accent-purple);
             box-shadow: 0 0 0 3px rgba(153, 68, 255, 0.15);
         }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            color-scheme: dark;
+        }
+
+        /* Agent Summary */
+        .agent-section { margin-top: 1.5rem; }
+
+        .agent-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .agent-card:hover { border-color: #3a3a5d; transform: translateX(4px); }
+
+        .agent-card.repeat-offender {
+            border-color: rgba(255, 51, 102, 0.4);
+            background: rgba(255, 51, 102, 0.03);
+        }
+
+        .agent-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .agent-info { flex: 1; }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .repeat-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--accent-red);
+        }
+
+        .agent-flags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .agent-flag-pill {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .agent-flag-pill.pill-critical { background: rgba(255,51,102,0.15); color: var(--accent-red); }
+        .agent-flag-pill.pill-high { background: rgba(255,102,51,0.15); color: var(--accent-orange); }
+        .agent-flag-pill.pill-medium { background: rgba(255,204,0,0.15); color: var(--accent-yellow); }
+        .agent-flag-pill.pill-low { background: rgba(51,153,255,0.15); color: var(--accent-blue); }
+
+        .agent-total {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .agent-total-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .speaker-tag {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(255, 68, 170, 0.12);
+            color: var(--accent-pink);
+        }
+
+        .call-date-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.6rem 1rem;
+            background: rgba(153, 68, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(153, 68, 255, 0.15);
+        }
+
+        .call-date-banner strong { color: var(--text-primary); }
 
         /* Buttons */
         .btn-row {
@@ -689,6 +814,10 @@
 
                 <div class="options">
                     <div class="option-group">
+                        <label for="callDate">Date of Call</label>
+                        <input type="date" id="callDate">
+                    </div>
+                    <div class="option-group">
                         <label for="mode">Analysis Mode</label>
                         <select id="mode">
                             <option value="rules-only">Rules Only (offline)</option>
@@ -743,6 +872,22 @@
 
                 <div class="stats-grid" id="statsGrid"></div>
 
+                <div id="callDateBanner"></div>
+
+                <!-- Agent Summary -->
+                <div class="agent-section" id="agentSection" style="display:none;">
+                    <div class="card-header" style="margin-top:0.5rem;">
+                        <div class="card-header-icon" style="background: rgba(255,68,170,0.15); color: var(--accent-pink);">&#128100;</div>
+                        <h2>Agent / Speaker Summary</h2>
+                    </div>
+                    <div id="agentList"></div>
+                </div>
+
+                <div class="card-header" style="margin-top:1.2rem;">
+                    <div class="card-header-icon" style="background: rgba(255,204,0,0.15); color: var(--accent-yellow);">&#128270;</div>
+                    <h2>Detailed Findings</h2>
+                </div>
+
                 <div class="filter-bar" id="filterBar">
                     <button class="filter-pill active" data-filter="all">All</button>
                 </div>
@@ -781,9 +926,16 @@
         const statsGrid = document.getElementById('statsGrid');
         const filterBar = document.getElementById('filterBar');
         const findingsList = document.getElementById('findingsList');
+        const callDateInput = document.getElementById('callDate');
+        const callDateBanner = document.getElementById('callDateBanner');
+        const agentSection = document.getElementById('agentSection');
+        const agentList = document.getElementById('agentList');
         const toast = document.getElementById('toast');
 
         let currentData = null;
+
+        // Set today's date as default
+        callDateInput.valueAsDate = new Date();
 
         // Text stats
         textInput.addEventListener('input', updateStats);
@@ -853,7 +1005,8 @@
                 text: textInput.value,
                 mode: modeSelect.value,
                 severity: severitySelect.value,
-                api_key: apiKeyInput.value
+                api_key: apiKeyInput.value,
+                call_date: callDateInput.value
             };
 
             // Simulate progress
@@ -909,6 +1062,16 @@
             statsGrid.innerHTML = '';
             filterBar.innerHTML = '';
             findingsList.innerHTML = '';
+            callDateBanner.innerHTML = '';
+            agentList.innerHTML = '';
+            agentSection.style.display = 'none';
+
+            // Show call date banner
+            if (data.call_date) {
+                const dateObj = new Date(data.call_date + 'T00:00:00');
+                const formatted = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                callDateBanner.innerHTML = `<div class="call-date-banner">&#128197; Call Date: <strong>${formatted}</strong></div>`;
+            }
 
             if (data.total === 0) {
                 results.classList.add('active');
@@ -941,6 +1104,51 @@
                 <div class="stat-card stat-low"><div class="stat-number">${counts.low}</div><div class="stat-label">Low</div></div>
             `;
 
+            // Agent Summary
+            if (data.agent_summary && data.agent_summary.length > 0) {
+                agentSection.style.display = 'block';
+                const AVATAR_COLORS = ['#ff3366', '#9944ff', '#3399ff', '#00cc88', '#ff6633', '#ffcc00', '#ff44aa'];
+                data.agent_summary.forEach((agent, idx) => {
+                    const isRepeat = agent.total >= 3;
+                    const initials = agent.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                    const color = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+
+                    let pills = '';
+                    if (agent.critical > 0) pills += `<span class="agent-flag-pill pill-critical">${agent.critical} critical</span>`;
+                    if (agent.high > 0) pills += `<span class="agent-flag-pill pill-high">${agent.high} high</span>`;
+                    if (agent.medium > 0) pills += `<span class="agent-flag-pill pill-medium">${agent.medium} medium</span>`;
+                    if (agent.low > 0) pills += `<span class="agent-flag-pill pill-low">${agent.low} low</span>`;
+
+                    const catList = Object.entries(agent.categories || {}).map(([c, n]) => `${c}: ${n}`).join(', ');
+
+                    const div = document.createElement('div');
+                    div.className = 'agent-card' + (isRepeat ? ' repeat-offender' : '');
+                    div.innerHTML = `
+                        <div class="agent-avatar" style="background: ${color}22; color: ${color}; border: 2px solid ${color}44;">${initials}</div>
+                        <div class="agent-info">
+                            <div class="agent-name">
+                                ${escapeHtml(agent.name)}
+                                ${isRepeat ? '<span class="repeat-badge">Repeat Offender</span>' : ''}
+                            </div>
+                            <div class="agent-flags">${pills}</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div class="agent-total">${agent.total}</div>
+                            <div class="agent-total-label">flags</div>
+                        </div>
+                    `;
+                    // Click to filter by agent
+                    div.style.cursor = 'pointer';
+                    div.addEventListener('click', () => {
+                        document.querySelectorAll('.finding').forEach(f => {
+                            f.style.display = (f.dataset.speaker === agent.name) ? '' : 'none';
+                        });
+                        filterBar.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    });
+                    agentList.appendChild(div);
+                });
+            }
+
             // Filters
             filterBar.innerHTML = '<button class="filter-pill active" data-filter="all">All</button>';
             Object.keys(categories).sort().forEach(cat => {
@@ -963,10 +1171,12 @@
                 const div = document.createElement('div');
                 div.className = `finding severity-${f.severity}`;
                 div.dataset.category = f.category;
+                div.dataset.speaker = f.speaker || '';
                 div.innerHTML = `
                     <div class="finding-header">
                         <span class="severity-tag tag-${f.severity}">${f.severity}</span>
                         <span class="category-tag">${f.category}</span>
+                        ${f.speaker ? `<span class="speaker-tag">&#128100; ${escapeHtml(f.speaker)}</span>` : ''}
                         ${f.line_number ? `<span class="line-tag">L${f.line_number}</span>` : ''}
                         <span class="source-tag source-${f.source}">${f.source}</span>
                     </div>

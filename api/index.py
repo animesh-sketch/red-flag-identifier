@@ -48,6 +48,7 @@ class handler(BaseHTTPRequestHandler):
         mode = data.get("mode", "rules-only")
         severity = data.get("severity", "low")
         api_key = (data.get("api_key") or "").strip() or os.environ.get("ANTHROPIC_API_KEY")
+        call_date = data.get("call_date", "")
 
         if not text:
             self.send_json(400, {"error": "No text provided. Paste text or upload a file."})
@@ -77,11 +78,31 @@ class handler(BaseHTTPRequestHandler):
                 "line_number": m.line_number,
                 "context": m.context,
                 "source": m.source,
+                "speaker": m.speaker,
             }
             for m in matches
         ]
 
-        self.send_json(200, {"total": len(results), "findings": results})
+        # Build agent summary
+        agent_summary = {}
+        for m in matches:
+            if m.speaker:
+                if m.speaker not in agent_summary:
+                    agent_summary[m.speaker] = {"total": 0, "critical": 0, "high": 0, "medium": 0, "low": 0, "categories": {}}
+                agent_summary[m.speaker]["total"] += 1
+                agent_summary[m.speaker][m.severity] = agent_summary[m.speaker].get(m.severity, 0) + 1
+                cat = m.category
+                agent_summary[m.speaker]["categories"][cat] = agent_summary[m.speaker]["categories"].get(cat, 0) + 1
+
+        sorted_agents = sorted(agent_summary.items(), key=lambda x: x[1]["total"], reverse=True)
+        agent_summary_sorted = [{"name": name, **data} for name, data in sorted_agents]
+
+        self.send_json(200, {
+            "total": len(results),
+            "findings": results,
+            "call_date": call_date,
+            "agent_summary": agent_summary_sorted,
+        })
 
     def send_json(self, status, data):
         self.send_response(status)

@@ -23,12 +23,14 @@ def analyze_text():
         mode = data.get("mode", "rules-only")
         severity = data.get("severity", "low")
         api_key = (data.get("api_key") or "").strip() or os.environ.get("ANTHROPIC_API_KEY")
+        call_date = data.get("call_date", "")
     else:
         text = request.form.get("text", "").strip()
         file = request.files.get("file")
         mode = request.form.get("mode", "rules-only")
         severity = request.form.get("severity", "low")
         api_key = request.form.get("api_key", "").strip() or os.environ.get("ANTHROPIC_API_KEY")
+        call_date = request.form.get("call_date", "")
         if file and file.filename:
             text = file.read().decode("utf-8", errors="replace")
 
@@ -57,11 +59,32 @@ def analyze_text():
             "line_number": m.line_number,
             "context": m.context,
             "source": m.source,
+            "speaker": m.speaker,
         }
         for m in matches
     ]
 
-    return jsonify({"total": len(results), "findings": results})
+    # Build agent summary: count flags per speaker
+    agent_summary = {}
+    for m in matches:
+        if m.speaker:
+            if m.speaker not in agent_summary:
+                agent_summary[m.speaker] = {"total": 0, "critical": 0, "high": 0, "medium": 0, "low": 0, "categories": {}}
+            agent_summary[m.speaker]["total"] += 1
+            agent_summary[m.speaker][m.severity] = agent_summary[m.speaker].get(m.severity, 0) + 1
+            cat = m.category
+            agent_summary[m.speaker]["categories"][cat] = agent_summary[m.speaker]["categories"].get(cat, 0) + 1
+
+    # Sort agents by total flags descending
+    sorted_agents = sorted(agent_summary.items(), key=lambda x: x[1]["total"], reverse=True)
+    agent_summary_sorted = [{"name": name, **data} for name, data in sorted_agents]
+
+    return jsonify({
+        "total": len(results),
+        "findings": results,
+        "call_date": call_date if request.is_json else "",
+        "agent_summary": agent_summary_sorted,
+    })
 
 
 def run_server(host="127.0.0.1", port=5000, debug=False):
