@@ -129,7 +129,12 @@ def analyze_with_ai(text: str, api_key: str | None = None) -> list[RuleMatch]:
         print("Install with: pip install anthropic")
         return []
 
-    client = Anthropic(api_key=key)
+    import httpx
+    http_client = httpx.Client(
+        timeout=httpx.Timeout(55.0, connect=10.0),
+        transport=httpx.HTTPTransport(retries=2),
+    )
+    client = Anthropic(api_key=key, http_client=http_client)
     chunks = _split_into_chunks(text)
     all_findings = []
 
