@@ -1,0 +1,26 @@
+[
+    {
+        "category": "custom/data-privacy",
+        "severity": "high",
+        "pattern": "\\b(SSN|social\\s+security)\\b",
+        "description": "Social security number reference detected"
+    },
+    {
+        "category": "custom/data-privacy",
+        "severity": "high",
+        "pattern": "\\bcredit\\s+card\\s+(number|info)\\b",
+        "description": "Credit card information reference detected"
+    },
+    {
+        "category": "custom/policy",
+        "severity": "medium",
+        "pattern": "\\bwork\\s+from\\s+home\\b.*\\bdon't\\s+tell\\b",
+        "description": "Unauthorized remote work arrangement"
+    },
+    {
+        "category": "custom/safety",
+        "severity": "critical",
+        "pattern": "\\bignore\\s+(the\\s+)?safety\\s+(protocol|procedure)s?\\b",
+        "description": "Safety protocol bypass mentioned"
+    }
+]

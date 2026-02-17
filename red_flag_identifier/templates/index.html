@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Flag Identifier</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #16162299;
+            --bg-input: #0d0d14;
+            --border: #2a2a3d;
+            --text-primary: #eeeef0;
+            --text-secondary: #9999aa;
+            --text-muted: #666677;
+            --accent-red: #ff3366;
+            --accent-orange: #ff6633;
+            --accent-yellow: #ffcc00;
+            --accent-blue: #3399ff;
+            --accent-purple: #9944ff;
+            --accent-green: #00cc88;
+            --accent-pink: #ff44aa;
+            --glow-red: rgba(255, 51, 102, 0.15);
+            --glow-purple: rgba(153, 68, 255, 0.1);
+            --gradient-main: linear-gradient(135deg, #ff3366, #9944ff, #3399ff);
+            --gradient-card: linear-gradient(135deg, rgba(255,51,102,0.05), rgba(153,68,255,0.05));
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, var(--glow-red), transparent 40%),
+                        radial-gradient(circle at 80% 20%, var(--glow-purple), transparent 40%),
+                        radial-gradient(circle at 50% 80%, rgba(51, 153, 255, 0.08), transparent 40%);
+            animation: bgFloat 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, -2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-top: 1rem;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-main);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px var(--glow-red);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 4px 20px var(--glow-red); }
+            50% { box-shadow: 0 4px 30px rgba(255, 51, 102, 0.3); }
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 300;
+            margin-top: 0.3rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
+
+        .card:hover { border-color: #3a3a5d; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-header-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Textarea */
+        textarea {
+            width: 100%;
+            height: 220px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 1rem 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(153, 68, 255, 0.15);
+        }
+
+        textarea::placeholder { color: var(--text-muted); }
+
+        /* Text stats bar */
+        .text-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.6rem;
+            padding: 0 0.2rem;
+        }
+
+        .text-stat {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .text-stat span { color: var(--text-secondary); font-weight: 500; }
+
+        /* File upload */
+        .file-drop {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-drop:hover, .file-drop.dragover {
+            border-color: var(--accent-purple);
+            background: rgba(153, 68, 255, 0.05);
+        }
+
+        .file-drop-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .file-drop-text strong { color: var(--accent-purple); cursor: pointer; }
+
+        .file-drop input { display: none; }
+
+        .file-name {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .file-name.active { display: block; }
+
+        /* Options grid */
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.2rem;
+        }
+
+        .option-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="password"] {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239999aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        select:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(153, 68, 255, 0.15);
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.85rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: var(--gradient-main);
+            color: #fff;
+            box-shadow: 0 4px 15px var(--glow-red);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 25px rgba(255, 51, 102, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-top: 1.5rem;
+        }
+
+        .progress-section.active { display: block; }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.8rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--gradient-main);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-text .spinner-small {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Error */
+        .error-msg {
+            background: rgba(255, 51, 102, 0.08);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--accent-red);
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .error-msg.active { display: block; }
+
+        /* Results section */
+        #results { display: none; }
+        #results.active { display: block; }
+
+        /* Stats dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.3s;
+        }
+
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .stat-card.stat-critical { border-color: rgba(255, 51, 102, 0.4); }
+        .stat-card.stat-high { border-color: rgba(255, 102, 51, 0.4); }
+        .stat-card.stat-medium { border-color: rgba(255, 204, 0, 0.4); }
+        .stat-card.stat-low { border-color: rgba(51, 153, 255, 0.4); }
+        .stat-card.stat-total { border-color: rgba(153, 68, 255, 0.4); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-critical .stat-number { color: var(--accent-red); }
+        .stat-high .stat-number { color: var(--accent-orange); }
+        .stat-medium .stat-number { color: var(--accent-yellow); }
+        .stat-low .stat-number { color: var(--accent-blue); }
+        .stat-total .stat-number { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        /* Category pills filter */
+        .filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+
+        .filter-pill {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-pill:hover { border-color: var(--accent-purple); color: var(--text-primary); }
+
+        .filter-pill.active {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            color: #fff;
+        }
+
+        /* Findings */
+        .finding {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.2rem 1.4rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .finding::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .finding:hover {
+            border-color: #3a3a5d;
+            transform: translateX(4px);
+        }
+
+        .finding.severity-critical::before { background: var(--accent-red); }
+        .finding.severity-high::before { background: var(--accent-orange); }
+        .finding.severity-medium::before { background: var(--accent-yellow); }
+        .finding.severity-low::before { background: var(--accent-blue); }
+
+        .finding-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .severity-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.25rem 0.7rem;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-critical { background: rgba(255,51,102,0.15); color: var(--accent-red); }
+        .tag-high { background: rgba(255,102,51,0.15); color: var(--accent-orange); }
+        .tag-medium { background: rgba(255,204,0,0.15); color: var(--accent-yellow); }
+        .tag-low { background: rgba(51,153,255,0.15); color: var(--accent-blue); }
+
+        .category-tag {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 0.25rem 0.7rem;
+            border-radius: 6px;
+        }
+
+        .source-tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: auto;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+        }
+
+        .source-tag.source-ai {
+            background: rgba(153, 68, 255, 0.15);
+            color: var(--accent-purple);
+        }
+
+        .source-tag.source-keyword {
+            background: rgba(0, 204, 136, 0.15);
+            color: var(--accent-green);
+        }
+
+        .line-tag {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .finding-desc {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .finding-quote {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.3);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--border);
+            line-height: 1.5;
+        }
+
+        .no-flags {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .no-flags-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+
+        .no-flags-text {
+            color: var(--accent-green);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .no-flags-sub {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        /* Export bar */
+        .export-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .export-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+            background: rgba(153, 68, 255, 0.05);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent-green);
+            color: #000;
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container { padding: 1rem; }
+            header h1 { font-size: 1.6rem; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .btn-row { flex-direction: column; }
+            .options { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">&#9873;</div>
+                <h1>Red Flag Identifier</h1>
+            </div>
+            <p>AI-powered transcript analysis for compliance, HR, fraud & custom red flags</p>
+        </header>
+
+        <!-- Input Card -->
+        <form id="analyzeForm">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background: rgba(153,68,255,0.15); color: var(--accent-purple);">&#9998;</div>
+                    <h2>Transcript Input</h2>
+                </div>
+
+                <textarea id="textInput" placeholder="Paste your transcript, meeting notes, call recording, or any text here..."></textarea>
+
+                <div class="text-stats">
+                    <div class="text-stat">Characters: <span id="charCount">0</span></div>
+                    <div class="text-stat">Words: <span id="wordCount">0</span></div>
+                    <div class="text-stat">Lines: <span id="lineCount">0</span></div>
+                </div>
+
+                <div class="file-drop" id="fileDrop">
+                    <div class="file-drop-text">
+                        Drag & drop a file here, or <strong id="fileBrowse">browse</strong>
+                    </div>
+                    <div class="file-name" id="fileName"></div>
+                    <input type="file" id="fileInput" accept=".txt,.csv,.md,.log,.json,.srt,.vtt">
+                </div>
+            </div>
+
+            <!-- Options Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background: rgba(51,153,255,0.15); color: var(--accent-blue);">&#9881;</div>
+                    <h2>Analysis Settings</h2>
+                </div>
+
+                <div class="options">
+                    <div class="option-group">
+                        <label for="mode">Analysis Mode</label>
+                        <select id="mode">
+                            <option value="rules-only">Rules Only (offline)</option>
+                            <option value="hybrid">Hybrid (rules + AI)</option>
+                            <option value="ai-only">AI Only (Claude)</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="severity">Min Severity</label>
+                        <select id="severity">
+                            <option value="low">Low & above</option>
+                            <option value="medium">Medium & above</option>
+                            <option value="high">High & above</option>
+                            <option value="critical">Critical only</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="apiKey">API Key (for AI modes)</label>
+                        <input type="password" id="apiKey" placeholder="sk-ant-...">
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn">
+                        <span>&#9888;</span> Analyze Transcript
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </div>
+
+                <div class="progress-section" id="progressSection">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span class="spinner-small"></span>
+                        <span id="progressText">Analyzing transcript...</span>
+                    </div>
+                </div>
+
+                <div class="error-msg" id="errorMsg"></div>
+            </div>
+        </form>
+
+        <!-- Results -->
+        <div id="results">
+            <!-- Stats Dashboard -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background: rgba(255,51,102,0.15); color: var(--accent-red);">&#9888;</div>
+                    <h2>Analysis Results</h2>
+                </div>
+
+                <div class="stats-grid" id="statsGrid"></div>
+
+                <div class="filter-bar" id="filterBar">
+                    <button class="filter-pill active" data-filter="all">All</button>
+                </div>
+
+                <div id="findingsList"></div>
+
+                <div class="export-bar" id="exportBar">
+                    <button class="export-btn" id="exportJson">&#128196; Export JSON</button>
+                    <button class="export-btn" id="exportCsv">&#128202; Export CSV</button>
+                    <button class="export-btn" id="copyResults">&#128203; Copy Summary</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Elements
+        const form = document.getElementById('analyzeForm');
+        const textInput = document.getElementById('textInput');
+        const fileInput = document.getElementById('fileInput');
+        const fileDrop = document.getElementById('fileDrop');
+        const fileBrowse = document.getElementById('fileBrowse');
+        const fileNameEl = document.getElementById('fileName');
+        const modeSelect = document.getElementById('mode');
+        const severitySelect = document.getElementById('severity');
+        const apiKeyInput = document.getElementById('apiKey');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const errorMsg = document.getElementById('errorMsg');
+        const results = document.getElementById('results');
+        const statsGrid = document.getElementById('statsGrid');
+        const filterBar = document.getElementById('filterBar');
+        const findingsList = document.getElementById('findingsList');
+        const toast = document.getElementById('toast');
+
+        let currentData = null;
+
+        // Text stats
+        textInput.addEventListener('input', updateStats);
+
+        function updateStats() {
+            const text = textInput.value;
+            document.getElementById('charCount').textContent = text.length.toLocaleString();
+            document.getElementById('wordCount').textContent = text.trim() ? text.trim().split(/\s+/).length.toLocaleString() : '0';
+            document.getElementById('lineCount').textContent = text ? text.split('\n').length.toLocaleString() : '0';
+        }
+
+        // File upload
+        fileBrowse.addEventListener('click', (e) => { e.preventDefault(); fileInput.click(); });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadFile(file);
+        });
+
+        fileDrop.addEventListener('dragover', (e) => { e.preventDefault(); fileDrop.classList.add('dragover'); });
+        fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
+        fileDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDrop.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) loadFile(file);
+        });
+
+        function loadFile(file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                textInput.value = ev.target.result;
+                fileNameEl.textContent = '&#10003; ' + file.name;
+                fileNameEl.classList.add('active');
+                updateStats();
+            };
+            reader.readAsText(file);
+        }
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            fileInput.value = '';
+            fileNameEl.classList.remove('active');
+            errorMsg.classList.remove('active');
+            results.classList.remove('active');
+            updateStats();
+        });
+
+        // Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!textInput.value.trim()) {
+                showError('Please paste some text or upload a file first.');
+                return;
+            }
+
+            errorMsg.classList.remove('active');
+            results.classList.remove('active');
+            progressSection.classList.add('active');
+            progressFill.style.width = '10%';
+            progressText.textContent = 'Starting analysis...';
+            analyzeBtn.disabled = true;
+
+            const payload = {
+                text: textInput.value,
+                mode: modeSelect.value,
+                severity: severitySelect.value,
+                api_key: apiKeyInput.value
+            };
+
+            // Simulate progress
+            let progress = 10;
+            const progressInterval = setInterval(() => {
+                if (progress < 85) {
+                    progress += Math.random() * 8;
+                    progressFill.style.width = progress + '%';
+                    if (progress > 30) progressText.textContent = 'Scanning for patterns...';
+                    if (progress > 55) progressText.textContent = 'Running AI analysis...';
+                    if (progress > 75) progressText.textContent = 'Compiling results...';
+                }
+            }, 500);
+
+            try {
+                const url = window.location.origin + '/analyze';
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+
+                if (!resp.ok) {
+                    showError(data.error || 'An error occurred.');
+                    return;
+                }
+
+                setTimeout(() => {
+                    progressSection.classList.remove('active');
+                    currentData = data;
+                    renderResults(data);
+                }, 300);
+
+            } catch (err) {
+                clearInterval(progressInterval);
+                showError('Network error: ' + err.message);
+            } finally {
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        function showError(msg) {
+            progressSection.classList.remove('active');
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('active');
+        }
+
+        function renderResults(data) {
+            statsGrid.innerHTML = '';
+            filterBar.innerHTML = '';
+            findingsList.innerHTML = '';
+
+            if (data.total === 0) {
+                results.classList.add('active');
+                findingsList.innerHTML = `
+                    <div class="no-flags">
+                        <div class="no-flags-icon">&#10004;</div>
+                        <div class="no-flags-text">No red flags found</div>
+                        <div class="no-flags-sub">The transcript appears clean based on the current analysis settings.</div>
+                    </div>`;
+                document.getElementById('exportBar').style.display = 'none';
+                results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+
+            document.getElementById('exportBar').style.display = 'flex';
+
+            // Stats
+            const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+            const categories = {};
+            data.findings.forEach(f => {
+                counts[f.severity] = (counts[f.severity] || 0) + 1;
+                categories[f.category] = (categories[f.category] || 0) + 1;
+            });
+
+            statsGrid.innerHTML = `
+                <div class="stat-card stat-total"><div class="stat-number">${data.total}</div><div class="stat-label">Total Flags</div></div>
+                <div class="stat-card stat-critical"><div class="stat-number">${counts.critical}</div><div class="stat-label">Critical</div></div>
+                <div class="stat-card stat-high"><div class="stat-number">${counts.high}</div><div class="stat-label">High</div></div>
+                <div class="stat-card stat-medium"><div class="stat-number">${counts.medium}</div><div class="stat-label">Medium</div></div>
+                <div class="stat-card stat-low"><div class="stat-number">${counts.low}</div><div class="stat-label">Low</div></div>
+            `;
+
+            // Filters
+            filterBar.innerHTML = '<button class="filter-pill active" data-filter="all">All</button>';
+            Object.keys(categories).sort().forEach(cat => {
+                filterBar.innerHTML += `<button class="filter-pill" data-filter="${cat}">${cat} (${categories[cat]})</button>`;
+            });
+
+            filterBar.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    filterBar.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    const filter = pill.dataset.filter;
+                    document.querySelectorAll('.finding').forEach(f => {
+                        f.style.display = (filter === 'all' || f.dataset.category === filter) ? '' : 'none';
+                    });
+                });
+            });
+
+            // Findings
+            data.findings.forEach((f) => {
+                const div = document.createElement('div');
+                div.className = `finding severity-${f.severity}`;
+                div.dataset.category = f.category;
+                div.innerHTML = `
+                    <div class="finding-header">
+                        <span class="severity-tag tag-${f.severity}">${f.severity}</span>
+                        <span class="category-tag">${f.category}</span>
+                        ${f.line_number ? `<span class="line-tag">L${f.line_number}</span>` : ''}
+                        <span class="source-tag source-${f.source}">${f.source}</span>
+                    </div>
+                    <div class="finding-desc">${escapeHtml(f.description)}</div>
+                    ${f.matched_text ? `<div class="finding-quote">"${escapeHtml(f.matched_text)}"</div>` : ''}
+                `;
+                findingsList.appendChild(div);
+            });
+
+            results.classList.add('active');
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Export JSON
+        document.getElementById('exportJson').addEventListener('click', () => {
+            if (!currentData) return;
+            const blob = new Blob([JSON.stringify(currentData, null, 2)], { type: 'application/json' });
+            downloadBlob(blob, 'red-flag-report.json');
+            showToast('JSON exported!');
+        });
+
+        // Export CSV
+        document.getElementById('exportCsv').addEventListener('click', () => {
+            if (!currentData) return;
+            let csv = 'Severity,Category,Description,Matched Text,Line,Source\n';
+            currentData.findings.forEach(f => {
+                csv += `"${f.severity}","${f.category}","${escapeCsv(f.description)}","${escapeCsv(f.matched_text)}","${f.line_number}","${f.source}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            downloadBlob(blob, 'red-flag-report.csv');
+            showToast('CSV exported!');
+        });
+
+        // Copy summary
+        document.getElementById('copyResults').addEventListener('click', () => {
+            if (!currentData) return;
+            const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+            currentData.findings.forEach(f => counts[f.severity]++);
+            let summary = `RED FLAG ANALYSIS REPORT\n========================\nTotal: ${currentData.total} flags found\nCritical: ${counts.critical} | High: ${counts.high} | Medium: ${counts.medium} | Low: ${counts.low}\n\n`;
+            currentData.findings.forEach((f, i) => {
+                summary += `${i+1}. [${f.severity.toUpperCase()}] ${f.category} - ${f.description}\n`;
+                if (f.matched_text) summary += `   "${f.matched_text}"\n`;
+                summary += '\n';
+            });
+            navigator.clipboard.writeText(summary);
+            showToast('Summary copied to clipboard!');
+        });
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function escapeCsv(str) { return (str || '').replace(/"/g, '""'); }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+    </script>
+</body>
+</html>
