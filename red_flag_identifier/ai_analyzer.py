@@ -79,30 +79,40 @@ def _analyze_chunk(client, chunk_text: str, start_line: int, chunk_num: int, tot
     if total_chunks > 1:
         chunk_note = f"\n\nNote: This is chunk {chunk_num}/{total_chunks} of a larger transcript. Line numbers are from the original document."
 
+    # Try models in order: sonnet first, fall back to haiku if overloaded
+    models = ["claude-sonnet-4-5-20250929", "claude-haiku-4-5-20251001"]
     max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            message = client.messages.create(
-                model="claude-sonnet-4-5-20250929",
-                max_tokens=4096,
-                system=SYSTEM_PROMPT,
-                messages=[
-                    {"role": "user", "content": f"Analyze this transcript for red flags:{chunk_note}\n\n{numbered_text}"}
-                ],
-            )
+    message = None
+
+    for model in models:
+        for attempt in range(max_retries):
+            try:
+                message = client.messages.create(
+                    model=model,
+                    max_tokens=4096,
+                    system=SYSTEM_PROMPT,
+                    messages=[
+                        {"role": "user", "content": f"Analyze this transcript for red flags:{chunk_note}\n\n{numbered_text}"}
+                    ],
+                )
+                break
+            except Exception as e:
+                error_msg = str(e)
+                if "authentication_error" in error_msg or "401" in error_msg:
+                    raise RuntimeError("Invalid API key. Please check your Anthropic API key and try again.")
+                if "credit balance" in error_msg or "billing" in error_msg.lower():
+                    raise RuntimeError("Insufficient credits. Please add credits at console.anthropic.com/settings/billing")
+                if "rate_limit" in error_msg or "429" in error_msg or "overloaded" in error_msg.lower() or "529" in error_msg or "Connection error" in error_msg:
+                    if attempt < max_retries - 1:
+                        time.sleep(5)
+                        continue
+                    break  # Try next model
+                raise RuntimeError(f"AI analysis failed: {error_msg}")
+        if message:
             break
-        except Exception as e:
-            error_msg = str(e)
-            if "authentication_error" in error_msg or "401" in error_msg:
-                raise RuntimeError("Invalid API key. Please check your Anthropic API key and try again.")
-            if "credit balance" in error_msg or "billing" in error_msg.lower():
-                raise RuntimeError("Insufficient credits. Please add credits at console.anthropic.com/settings/billing")
-            if "rate_limit" in error_msg or "429" in error_msg:
-                if attempt < max_retries - 1:
-                    time.sleep(DELAY_BETWEEN_CHUNKS)
-                    continue
-                raise RuntimeError(f"Rate limit exceeded after {max_retries} retries. Try again in a minute or use a shorter transcript.")
-            raise RuntimeError(f"AI analysis failed: {error_msg}")
+
+    if not message:
+        raise RuntimeError("AI service temporarily unavailable. Please try again in a moment or use rules-only mode.")
 
     response_text = message.content[0].text
 
